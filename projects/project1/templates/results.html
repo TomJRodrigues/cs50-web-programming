@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search Results
+{% endblock %}
+
+{% block body %}
+    <h1>Search Results</h1>
+
+    <ul>
+        {% for book in books %}
+            <li>
+                {{ book.title }}, by {{ book.author }}. Published in {{ book.year }} as {{ book.isbn }}.
+            </li>
+        {% endfor %}
+    </ul>
+    
+{% endblock %}

@@ -1,0 +1,100 @@
+$transitionTime: .2s;
+$textColor: white;
+$hoverColor: lightgrey;
+
+%a {
+    color: $textColor;
+    text-decoration: none;
+    transition: $transitionTime;
+}
+
+%aHover {
+    color: $hoverColor;
+    text-decoration: none;
+}
+
+html {
+    min-height: 1vh;
+}
+
+header, footer {
+    background-color: darkgreen;
+}
+
+header{
+    h1 {
+        color: $textColor;
+    }
+}
+
+main {
+    h1 {
+        text-align: center;
+    }
+    div {
+        width: 100%;
+    }
+}
+
+table {
+    border: 2px solid black;
+    margin: 20px 0px;
+    tbody {
+        tr:nth-child(odd) {
+            background-color: lightgrey;
+        }
+    }
+}
+
+th, td {
+    padding: 4px;
+}
+
+#heroimg {
+    width: 600px;
+    height: auto;
+    margin: 20px auto;
+    border-radius: 100px;
+}
+
+.navbar {
+    ul {
+        display: flex;
+        li {
+            flex-wrap: nowrap;
+            list-style: none;
+            margin: auto 5px;
+            a {
+                @extend %a;
+            }
+            a:hover {
+                @extend %aHover;
+            }
+        }
+    }
+}
+
+footer {
+    margin-top: 20px;
+    p {
+        color: $textColor;
+        padding: 20px;
+        a {
+            @extend %a;
+        }
+        a:hover {
+            @extend %aHover;
+        }
+    }
+}
+
+// Media Queeries
+@media (max-width: 900px) {
+    main {
+        a[role=button]{
+            background-color: white;
+            border: 6px solid darkgreen;
+            color: darkgreen;
+        }
+    }
+}

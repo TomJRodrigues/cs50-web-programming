@@ -1,0 +1,58 @@
+.navbar ul li a, footer p a {
+  color: white;
+  text-decoration: none;
+  transition: 0.2s; }
+
+.navbar ul li a:hover, footer p a:hover {
+  color: lightgrey;
+  text-decoration: none; }
+
+html {
+  min-height: 1vh; }
+
+header, footer {
+  background-color: darkgreen; }
+
+header h1 {
+  color: white; }
+
+main h1 {
+  text-align: center; }
+main div {
+  width: 100%; }
+
+table {
+  border: 2px solid black;
+  margin: 20px 0px; }
+  table tbody tr:nth-child(odd) {
+    background-color: lightgrey; }
+
+th, td {
+  padding: 4px; }
+
+#heroimg {
+  width: 600px;
+  height: auto;
+  margin: 20px auto;
+  border-radius: 100px; }
+
+.navbar ul {
+  display: flex; }
+  .navbar ul li {
+    flex-wrap: nowrap;
+    list-style: none;
+    margin: auto 5px; }
+
+footer {
+  margin-top: 20px; }
+  footer p {
+    color: white;
+    padding: 20px; }
+
+@media (max-width: 900px) {
+  main a[role=button] {
+    background-color: white;
+    border: 6px solid darkgreen;
+    color: darkgreen; } }
+
+/*# sourceMappingURL=styles.css.map */

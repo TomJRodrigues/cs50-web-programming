@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="styles.css">
+
+        <title>TripPlan</title>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <header class="row">
+                <h1 class="col-8 offset-1">TripPlan</h1>
+                <nav class="navbar col-3">
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="plan.html">Plan</a></li>
+                        <li><a href="resources.html">Resources</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+            </header>
+            <main role="main" class="row col-6 offset-3 justify-content-center">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Names and Ages of Party Members</label> 
+                            <input type="text" class="form-control" id="name" placeholder="Enter party member details">
+                            <small id="vehicleHelp" class="form-text text-muted">Enter the names and ages of everyone in your party</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeDeparting">Time Departing</label> 
+                            <input type="text" class="form-control" id="timeLeft" placeholder="Enter time departing">
+                        </div>
+                        <div class="form-group">
+                            <label for="locationDeparting">Departing from</label> 
+                            <input type="text" class="form-control" id="locationDeparting" placeholder="Enter location departing from">
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle">Vehicle</label> 
+                            <input type="text" class="form-control" id="vehicle" placeholder="Enter vehicle details">
+                            <small id="vehicleHelp" class="form-text text-muted">Car/bike make, model, color, license etc</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="supplies">Supplies</label> 
+                            <textarea type="text" class="form-control" id="supplies" placeholder="Enter supply details" rows="5"></textarea>
+                            <small id="vehicleHelp" class="form-text text-muted">Overnight gear? PLB or Sattellite phone? Map/compass/gps? First aid kit? Food? Snow travel equipment? Water treatment?</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="emailAddress">Your Email Address</label>
+                            <input type="email" class="form-control" id="emailAddress" aria-describedby="emailHelp" placeholder="Enter email">
+                            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyEmailAddress">Emergency Contact Email Address</label>
+                            <input type="email" class="form-control" id="emergencyEmailAddress" aria-describedby="emailHelp" placeholder="Enter emergency contact email">
+                            <small id="emergencyEmailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="emergencyPhone">Emergency Contact Phone Number</label>
+                            <input type="text" class="form-control" id="emergencyPhone" placeholder="Enter emergency contact phone number">
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-2 offset-5">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                            </div>
+                    </form>
+            </main>
+            <footer class="row">
+                <p class="col-2 offset-5">
+                        By Tom Rodrigues: <a href="mailto:tomjrodrigues@gmail.com">Email</a> + <a href="https://github.com/TomJRodrigues/">GitHub</a>
+                </p>
+            </footer>
+        </div>
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>
