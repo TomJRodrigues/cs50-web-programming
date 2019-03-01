@@ -36,14 +36,15 @@ def results():
 
     # Get form information.
     book_id = request.form.get("book_id")
-    
+
     books = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id})
     return render_template("results.html", books=books)
 
-@app.route("/book/<int:book_id>", methods=["POST", "GET"])
+@app.route("/book/<int:book_id>")
 def book(book_id):
     """ Lists details about a single book."""
-
+    print("test")
     # Get all info for one book.
-    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchall()
-    return render_template("book.html", book_id=book_id)
+    print(book_id)
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    return render_template("book.html", book=book)
