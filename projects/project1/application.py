@@ -38,6 +38,8 @@ def results():
     book_query = request.form.get("book_query")
     book_query = "%" + book_query + "%"
 
+    if db.execute("SELECT * FROM books WHERE title LIKE :query OR author LIKE :query OR isbn LIKE :query", {"query": book_query}).rowcount == 0:
+        return render_template("error.html", message="No book title, author or isbn matches that query, please try again.")
     books = db.execute("SELECT * FROM books WHERE title LIKE :query OR author LIKE :query OR isbn LIKE :query", {"query": book_query})
     return render_template("results.html", books=books)
 
