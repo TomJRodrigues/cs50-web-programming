@@ -35,9 +35,10 @@ def results():
     """Search Results"""
 
     # Get form information.
-    book_id = request.form.get("book_id")
+    book_query = request.form.get("book_query")
+    book_query = "%" + book_query + "%"
 
-    books = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id})
+    books = db.execute("SELECT * FROM books WHERE title LIKE :query OR author LIKE :query OR isbn LIKE :query", {"query": book_query})
     return render_template("results.html", books=books)
 
 @app.route("/book/<int:book_id>")
