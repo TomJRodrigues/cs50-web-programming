@@ -7,11 +7,14 @@
 {% block body %}
     <h1>Search for a Book</h1>
 
+    <h2>Welcome, {{ username }}!</h2>
+
     <form action="{{ url_for('results') }}" method="post">
 
         <div class="form-group">
             <input class="form-control" name="book_query" placeholder="Book ISBN, author, or title">
         </div>
+        <small>Ex: 0679732268, "William Faulkner", or "As I Lay Dying"</small>
 
         <div class="form-group">
             <button class="btn btn-primary">Submit</button>

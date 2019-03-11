@@ -4,8 +4,10 @@ from flask import Flask, render_template, session, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
@@ -25,10 +27,59 @@ db = scoped_session(sessionmaker(bind=engine))
 def index():
     return render_template("index.html")
 
+@app.route("/login.html", methods=["POST", "GET"])
+def login():
+    username = request.form.get("register_username")
+    password = request.form.get("register_password")
+    password_confirmation = request.form.get("confirm_password")
+
+    # Check if username submitted
+    if not username:
+        return render_template("error.html", message="Please enter a username.")
+
+    # Check if username already exists
+    checkUser = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
+    if checkUser:
+        return render_template("error.html", message="Username already exists, please choose a different username.")
+
+    # Check if password submitted
+    if not password:
+        return render_template("error.html", message="Please enter a password.")
+    
+    # Check if password confirmation submitted
+    if not password_confirmation:
+        return render_template("error.html", message="Please confirm your password.")
+
+    # Check if passwords are the same
+    if password != password_confirmation:
+        return render_template("error.html", message="Passwords must match.")
+
+    # Encrypt password with bcrypt
+    pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    # Add user and password hash to users db table
+    db.execute("INSERT INTO users (username, hash) VALUES (:username, :pw_hash)", {"username": username, "pw_hash": pw_hash})
+    db.commit()
+
+    return render_template("login.html", message="Account successfully created.")
+
+@app.route("/register.html", methods=["GET"])
+def register():
+    return render_template("register.html")
+
 @app.route("/search", methods=["POST", "GET"])
 def search():
     """Search for a Book"""
-    return render_template("search.html")
+    username = request.form.get("login_username")
+    password = request.form.get("login_password")
+
+    # If username exists, check password
+
+    # Log user in, store in session
+
+    # Display username if logged in or after registering
+
+    return render_template("search.html", username=username)
 
 @app.route("/results", methods=["POST"])
 def results():

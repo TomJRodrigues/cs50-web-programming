@@ -7,9 +7,10 @@
 {% block body %}
     <h1>Error</h1>
 
-    {{ message }}
+    <div class="alert alert-danger">{{ message }}</div>
     <br/>
     <br/>
+    <a class="btn btn-primary" href="index.html" role="button">Home</a>
     <button class="btn btn-primary" onclick="goBack()">Previous Page</button>
 
     <script>
