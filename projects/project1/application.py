@@ -1,10 +1,10 @@
 import os
 
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, redirect, session, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt  # https://flask-bcrypt.readthedocs.io/en/latest/
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -29,55 +29,89 @@ def index():
 
 @app.route("/login.html", methods=["POST", "GET"])
 def login():
-    username = request.form.get("register_username")
-    password = request.form.get("register_password")
-    password_confirmation = request.form.get("confirm_password")
-
-    # Check if username submitted
-    if not username:
-        return render_template("error.html", message="Please enter a username.")
-
-    # Check if username already exists
-    checkUser = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
-    if checkUser:
-        return render_template("error.html", message="Username already exists, please choose a different username.")
-
-    # Check if password submitted
-    if not password:
-        return render_template("error.html", message="Please enter a password.")
     
-    # Check if password confirmation submitted
-    if not password_confirmation:
-        return render_template("error.html", message="Please confirm your password.")
+    if request.method == "GET":
+        return render_template("login.html")
 
-    # Check if passwords are the same
-    if password != password_confirmation:
-        return render_template("error.html", message="Passwords must match.")
+    if request.method == "POST":
 
-    # Encrypt password with bcrypt
-    pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        # Forget session
+        session.clear()
 
-    # Add user and password hash to users db table
-    db.execute("INSERT INTO users (username, hash) VALUES (:username, :pw_hash)", {"username": username, "pw_hash": pw_hash})
-    db.commit()
+        username = request.form.get("register_username")
+        password = request.form.get("register_password")
+        password_confirmation = request.form.get("confirm_password")
 
-    return render_template("login.html", message="Account successfully created.")
+        # Check if username submitted
+        if not username:
+            return render_template("error.html", message="Please enter a username.")
+
+        # Check if username already exists
+        checkUser = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
+        if checkUser:
+            return render_template("error.html", message="Username already exists, please choose a different username.")
+
+        # Check if password submitted
+        if not password:
+            return render_template("error.html", message="Please enter a password.")
+        
+        # Check if password confirmation submitted
+        if not password_confirmation:
+            return render_template("error.html", message="Please confirm your password.")
+
+        # Check if passwords are the same
+        if password != password_confirmation:
+            return render_template("error.html", message="Passwords must match.")
+
+        # Encrypt password with bcrypt
+        pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # Add user and password hash to users db table
+        db.execute("INSERT INTO users (username, hash) VALUES (:username, :pw_hash)", {"username": username, "pw_hash": pw_hash})
+        db.commit()
+
+        return render_template("login.html", message="Account successfully created.")
 
 @app.route("/register.html", methods=["GET"])
 def register():
     return render_template("register.html")
 
-@app.route("/search", methods=["POST", "GET"])
+@app.route("/logout.html")
+def logout():
+
+    # Clear user session
+    session.clear()
+
+    # Redirect to index page
+    return redirect("/")
+
+@app.route("/search", methods=["POST"])
 def search():
     """Search for a Book"""
+    # Forget a session
+    session.clear()
+
     username = request.form.get("login_username")
     password = request.form.get("login_password")
+    login_info = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
 
-    # If username exists, check password
+    # Check if username submitted
+    if not username:
+        return render_template("error.html", message="Please enter a username.")
 
-    # Log user in, store in session
+    # Check if password submitted
+    if not password:
+        return render_template("error.html", message="Please enter a password.")
 
-    # Display username if logged in or after registering
+    # Check if credentials are accurate
+    if not login_info:
+        return render_template("error.html", message="Username does not exist, please try again.")
+    if not bcrypt.check_password_hash(login_info.hash, password):
+        return render_template("error.html", message="Incorrect password, please try again.")
+
+    # Set session
+    session["user_id"] = login_info[0]
+    session["user_name"] = login_info[1]
 
     return render_template("search.html", username=username)
 
@@ -97,8 +131,7 @@ def results():
 @app.route("/book/<int:book_id>")
 def book(book_id):
     """ Lists details about a single book."""
-    print("test")
+    
     # Get all info for one book.
-    print(book_id)
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     return render_template("book.html", book=book)
