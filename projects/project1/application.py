@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, redirect, session, request
+from flask import Flask, render_template, redirect, session, request, jsonify, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -17,6 +17,9 @@ if not os.getenv("DATABASE_URL"):
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+# http://flask.pocoo.org/docs/1.0/quickstart/
+app.secret_key = 'b_5#y2L"F4Q8z\n\xec]/'
 
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
@@ -78,12 +81,9 @@ def register():
 
 @app.route("/logout.html")
 def logout():
-
-    # Clear user session
-    session.clear()
-
-    # Redirect to index page
-    return redirect("/")
+    # Remove the username from the session if it's there from http://flask.pocoo.org/docs/1.0/quickstart/
+    session.pop('username', None)
+    return redirect(url_for('index'))
 
 @app.route("/search", methods=["POST"])
 def search():
@@ -155,7 +155,15 @@ def book(book_id):
             render_template("error.html", message="Please enter a review score.")
 
         # Add review to database
-        db.execute("INSERT INTO reviews (book_id, user_id, review_text, review_score) VALUES (:book_id, :user_id, :review_text, :review_score)", {"book_id": book.id, "user_id": session["user_id"], "review_text": review_text, "review_score": review_score})
+        db.execute("INSERT INTO reviews (book_id, username, review_text, review_score) VALUES (:book_id, :username, :review_text, :review_score)", {"book_id": book.id, "username": session["user_name"], "review_text": review_text, "review_score": review_score})
         db.commit()
+        return redirect(url_for('book', book_id=book.id)) # from: https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission
 
     return render_template("book.html", book=book, reviews=reviews)
+
+@app.route("/api/<isbn>", methods=["GET"])
+def api(isbn):
+
+
+
+    return isbn
