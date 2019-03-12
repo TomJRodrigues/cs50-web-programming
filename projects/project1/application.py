@@ -123,15 +123,39 @@ def results():
     book_query = request.form.get("book_query")
     book_query = "%" + book_query + "%"
 
+    # Find book info
     if db.execute("SELECT * FROM books WHERE title LIKE :query OR author LIKE :query OR isbn LIKE :query", {"query": book_query}).rowcount == 0:
         return render_template("error.html", message="No book title, author or isbn matches that query, please try again.")
     books = db.execute("SELECT * FROM books WHERE title LIKE :query OR author LIKE :query OR isbn LIKE :query", {"query": book_query})
+
     return render_template("results.html", books=books)
 
-@app.route("/book/<int:book_id>")
+@app.route("/book/<int:book_id>", methods=["POST", "GET"])
 def book(book_id):
     """ Lists details about a single book."""
-    
-    # Get all info for one book.
+
+    # Get all info for one book
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
-    return render_template("book.html", book=book)
+
+    # Get all reviews for that single book
+    if db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id}).rowcount == 0:
+        reviews = None
+    reviews = db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id})
+
+    if request.method == "POST":
+        review_text = request.form.get("review_text")
+        review_score = request.form.get("review_score")
+
+        # Check if review text supplied
+        if not review_text:
+            render_template("error.html", message="Please enter a review.")
+
+        # Check if review score supplied
+        if not review_score:
+            render_template("error.html", message="Please enter a review score.")
+
+        # Add review to database
+        db.execute("INSERT INTO reviews (book_id, user_id, review_text, review_score) VALUES (:book_id, :user_id, :review_text, :review_score)", {"book_id": book.id, "user_id": session["user_id"], "review_text": review_text, "review_score": review_score})
+        db.commit()
+
+    return render_template("book.html", book=book, reviews=reviews)
