@@ -1,4 +1,6 @@
 import os
+import requests
+import json
 
 from flask import Flask, render_template, redirect, session, request, jsonify, url_for
 from flask_session import Session
@@ -21,6 +23,9 @@ Session(app)
 # http://flask.pocoo.org/docs/1.0/quickstart/
 app.secret_key = 'b_5#y2L"F4Q8z\n\xec]/'
 
+# Goodreads API Key
+goodreads_api_key = 'RIkS4SsO6qEtB9EIHQjs2A'
+
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
@@ -32,7 +37,7 @@ def index():
 
 @app.route("/login.html", methods=["POST", "GET"])
 def login():
-    
+
     if request.method == "GET":
         return render_template("login.html")
 
@@ -57,7 +62,7 @@ def login():
         # Check if password submitted
         if not password:
             return render_template("error.html", message="Please enter a password.")
-        
+
         # Check if password confirmation submitted
         if not password_confirmation:
             return render_template("error.html", message="Please confirm your password.")
@@ -137,10 +142,24 @@ def book(book_id):
     # Get all info for one book
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
 
-    # Get all reviews for that single book
+    # Get all local reviews for that single book
     if db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id}).rowcount == 0:
         reviews = None
     reviews = db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id})
+
+    # Get all Goodreads reviews for that book
+    params = {
+        'key' : goodreads_api_key,
+        'isbns' : book.isbn,
+        'format' : 'json'
+    }
+    r = requests.get(
+        'https://www.goodreads.com/book/review_counts.json', params=params
+    )
+    r = r.json()
+    total_goodreads_reviews = r['books'][0]['reviews_count']
+    average_goodreads_rating = r['books'][0]['average_rating']
+    print(r['books'][0]['reviews_count'])
 
     if request.method == "POST":
         review_text = request.form.get("review_text")
@@ -157,13 +176,26 @@ def book(book_id):
         # Add review to database
         db.execute("INSERT INTO reviews (book_id, username, review_text, review_score) VALUES (:book_id, :username, :review_text, :review_score)", {"book_id": book.id, "username": session["user_name"], "review_text": review_text, "review_score": review_score})
         db.commit()
-        return redirect(url_for('book', book_id=book.id)) # from: https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission
+        return redirect(url_for('book', book_id=book.id)) # from: https://stackoverflow.com/questions/31945329/clear-valid-form-after-it-is-submitted
 
-    return render_template("book.html", book=book, reviews=reviews)
+    return render_template("book.html", book=book, total_goodreads_reviews=total_goodreads_reviews, average_goodreads_rating=average_goodreads_rating, reviews=reviews)
 
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
-
-
-
     return isbn
+
+
+    {
+        'books': [{
+            'id': 77013,
+            'isbn': '067973225X',
+            'isbn13': '9780679732259',
+            'ratings_count': 113421,
+            'reviews_count': 239244,
+            'text_reviews_count': 5239,
+            'work_ratings_count': 122589,
+            'work_reviews_count': 257898,
+            'work_text_reviews_count': 6437,
+            'average_rating': '3.72'
+        }]
+    }
