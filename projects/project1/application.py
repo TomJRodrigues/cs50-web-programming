@@ -1,12 +1,14 @@
 import os
 import requests
 import json
+import simplejson
 
 from flask import Flask, render_template, redirect, session, request, jsonify, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_bcrypt import Bcrypt  # https://flask-bcrypt.readthedocs.io/en/latest/
+from decimal import Decimal # https://stackoverflow.com/questions/16957275/python-to-json-serialization-fails-on-decimal/16957370#16957370
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -147,7 +149,7 @@ def book(book_id):
         reviews = None
     reviews = db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id})
 
-    # Get all Goodreads reviews for that book
+    # Get all Goodreads review information for that book
     params = {
         'key' : goodreads_api_key,
         'isbns' : book.isbn,
@@ -159,7 +161,6 @@ def book(book_id):
     r = r.json()
     total_goodreads_reviews = r['books'][0]['reviews_count']
     average_goodreads_rating = r['books'][0]['average_rating']
-    print(r['books'][0]['reviews_count'])
 
     if request.method == "POST":
         review_text = request.form.get("review_text")
@@ -167,11 +168,16 @@ def book(book_id):
 
         # Check if review text supplied
         if not review_text:
-            render_template("error.html", message="Please enter a review.")
+            return render_template("error.html", message="Please enter a review.")
 
         # Check if review score supplied
         if not review_score:
-            render_template("error.html", message="Please enter a review score.")
+            return render_template("error.html", message="Please enter a review score.")
+
+        # Check if user has already submitted a review for this book
+        if db.execute("SELECT * FROM reviews WHERE username = :username AND book_id = :book_id", {"username": session["user_name"], "book_id": book.id}).rowcount != 0:
+            print("made it here")
+            return render_template("error.html", message="You have already submitted a review for this book.")
 
         # Add review to database
         db.execute("INSERT INTO reviews (book_id, username, review_text, review_score) VALUES (:book_id, :username, :review_text, :review_score)", {"book_id": book.id, "username": session["user_name"], "review_text": review_text, "review_score": review_score})
@@ -182,20 +188,38 @@ def book(book_id):
 
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
-    return isbn
 
-
-    {
-        'books': [{
-            'id': 77013,
-            'isbn': '067973225X',
-            'isbn13': '9780679732259',
-            'ratings_count': 113421,
-            'reviews_count': 239244,
-            'text_reviews_count': 5239,
-            'work_ratings_count': 122589,
-            'work_reviews_count': 257898,
-            'work_text_reviews_count': 6437,
-            'average_rating': '3.72'
-        }]
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    
+    # Get all Goodreads review information for that book
+    params = {
+        'key' : goodreads_api_key,
+        'isbns' : isbn,
+        'format' : 'json'
     }
+    r = requests.get(
+        'https://www.goodreads.com/book/review_counts.json', params=params
+    )
+    r = r.json()
+    total_goodreads_reviews = r['books'][0]['reviews_count']
+    average_goodreads_rating = r['books'][0]['average_rating']
+
+    # Get local review information. Example from: https://code-maven.com/slides/python-programming/sqlalchemy-engine-select
+    local_reviews_count = db.execute("SELECT COUNT(review_text) FROM reviews WHERE book_id = :book_id", {"book_id": book[0]}).fetchone()
+    if local_reviews_count[0] == 0:
+        local_reviews_avg_score = 0
+    else: 
+        local_reviews_avg_score = db.execute("SELECT AVG(review_score) FROM reviews WHERE book_id = :book_id", {"book_id": book[0]}).fetchone()
+        local_reviews_avg_score = round(local_reviews_avg_score[0], 2)
+
+    book_info = {
+        "title": book[1],
+        "author": book[2],
+        "year": book[3],
+        "isbn": book[4],
+        "review_count": local_reviews_count[0],
+        "average_score": local_reviews_avg_score
+    }
+    output = simplejson.dumps(book_info, indent=4)
+
+    return output
