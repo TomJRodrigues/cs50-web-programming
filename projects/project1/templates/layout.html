@@ -3,14 +3,22 @@
     <head>
         <title>{% block title %}{% endblock %}</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}"> <!-- https://pythonhow.com/add-css-to-flask-website/ -->
     </head>
     <body>
         <div class="container">
-            <div class="header">
-                <a href="/logout.html" class="btn btn-primary" role="button">Logout</a>
+            <div class="row">
+                <div class="offset-10 col-sm">
+                    <a href="/" class="btn btn-primary" role="button">Home</a>
+                    <a href="/logout.html" class="btn btn-primary" role="button">Logout</a>
+                </div>
             </div>
-            {% block body %}
-            {% endblock %}
+            <div class="row">
+                <div class="offset-3 col-6 center">
+                    {% block body %}
+                    {% endblock %}
+                </div>
+            </div>
         </div>
     </body>
 </html>

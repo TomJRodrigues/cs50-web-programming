@@ -192,20 +192,6 @@ def api(isbn):
     if db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).rowcount == 0:
         abort(404)
     book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
-    
-    
-    # Get all Goodreads review information for that book
-    params = {
-        'key' : goodreads_api_key,
-        'isbns' : isbn,
-        'format' : 'json'
-    }
-    r = requests.get(
-        'https://www.goodreads.com/book/review_counts.json', params=params
-    )
-    r = r.json()
-    total_goodreads_reviews = r['books'][0]['reviews_count']
-    average_goodreads_rating = r['books'][0]['average_rating']
 
     # Get local review information. Example from: https://code-maven.com/slides/python-programming/sqlalchemy-engine-select
     local_reviews_count = db.execute("SELECT COUNT(review_text) FROM reviews WHERE book_id = :book_id", {"book_id": book[0]}).fetchone()
