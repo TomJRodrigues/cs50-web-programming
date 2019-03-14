@@ -3,7 +3,7 @@ import requests
 import json
 import simplejson
 
-from flask import Flask, render_template, redirect, session, request, jsonify, url_for
+from flask import Flask, render_template, redirect, session, request, jsonify, url_for, abort
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -189,7 +189,10 @@ def book(book_id):
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
 
+    if db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).rowcount == 0:
+        abort(404)
     book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    
     
     # Get all Goodreads review information for that book
     params = {
