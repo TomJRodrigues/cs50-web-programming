@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_bcrypt import Bcrypt  # https://flask-bcrypt.readthedocs.io/en/latest/
 from decimal import Decimal # https://stackoverflow.com/questions/16957275/python-to-json-serialization-fails-on-decimal/16957370#16957370
+from helpers import login_required
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -35,6 +36,7 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/")
 def index():
+
     return render_template("index.html")
 
 @app.route("/login.html", methods=["POST", "GET"])
@@ -89,40 +91,44 @@ def register():
 @app.route("/logout.html")
 def logout():
     # Remove the username from the session if it's there from http://flask.pocoo.org/docs/1.0/quickstart/
-    session.pop('username', None)
+    session.pop("user_id", None)
+    session.pop("user_name", None)
     return redirect(url_for('index'))
 
-@app.route("/search", methods=["POST"])
+@app.route("/search", methods=["GET", "POST"])
 def search():
     """Search for a Book"""
-    # Forget a session
-    session.clear()
 
-    username = request.form.get("login_username")
-    password = request.form.get("login_password")
-    login_info = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
+    if request.method == "POST":
 
-    # Check if username submitted
-    if not username:
-        return render_template("error.html", message="Please enter a username.")
+        username = request.form.get("login_username")
+        password = request.form.get("login_password")
+        login_info = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone()
 
-    # Check if password submitted
-    if not password:
-        return render_template("error.html", message="Please enter a password.")
+        # Check if username submitted
+        if not username:
+            return render_template("error.html", message="Please enter a username.")
 
-    # Check if credentials are accurate
-    if not login_info:
-        return render_template("error.html", message="Username does not exist, please try again.")
-    if not bcrypt.check_password_hash(login_info.hash, password):
-        return render_template("error.html", message="Incorrect password, please try again.")
+        # Check if password submitted
+        if not password:
+            return render_template("error.html", message="Please enter a password.")
 
-    # Set session
-    session["user_id"] = login_info[0]
-    session["user_name"] = login_info[1]
+        # Check if credentials are accurate
+        if not login_info:
+            return render_template("error.html", message="Username does not exist, please try again.")
+        if not bcrypt.check_password_hash(login_info.hash, password):
+            return render_template("error.html", message="Incorrect password, please try again.")
 
-    return render_template("search.html", username=username)
+        # Set session
+        session["user_id"] = login_info[0]
+        session["user_name"] = login_info[1]
+
+        return render_template("search.html", username=username)
+
+    return render_template("search.html")
 
 @app.route("/results", methods=["POST"])
+@login_required
 def results():
     """Search Results"""
 
@@ -138,6 +144,7 @@ def results():
     return render_template("results.html", books=books)
 
 @app.route("/book/<int:book_id>", methods=["POST", "GET"])
+@login_required
 def book(book_id):
     """ Lists details about a single book."""
 
